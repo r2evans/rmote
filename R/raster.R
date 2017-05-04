@@ -2,9 +2,9 @@
 #'
 #' @param x trellis object
 #' @param \ldots  additional parameters
-#' @S3method print trellis
 #' @import htmltools
 #' @importFrom digest digest
+#' @export
 print.trellis <- function(x, ...) {
   print_graphics(x)
 }
@@ -13,8 +13,34 @@ print.trellis <- function(x, ...) {
 #'
 #' @param x ggplot object
 #' @param \ldots  additional parameters
-#' @S3method print ggplot
+#' @export
 print.ggplot <- function(x, ...) {
+  print_graphics(x)
+}
+
+#' Wrap a expression that creates a base R plot as a plot_expression
+#'
+#' @param x an expression
+#' @examples
+#' \dontrun{
+#' start_rmote(basegraphics = FALSE)
+#' plot_expression(expression({
+#'   plot(10:1)
+#'   abline(0, 1)
+#' }))
+#' }
+#' @export
+plot_expression <- function(x) {
+  class(x) <- c("plot_expression", class(x))
+  x
+}
+
+#' Print plot_expression plot to servr
+#'
+#' @param x plot_expression object
+#' @param \ldots  additional parameters
+#' @export
+print.plot_expression <- function(x, ...) {
   print_graphics(x)
 }
 
@@ -22,20 +48,20 @@ print_graphics <- function(x) {
 
   graphics_opt <- getOption("rmote_graphics", FALSE)
 
-  if(is_rmote_on() && graphics_opt && no_other_devices()) {
+  if (is_rmote_on() && graphics_opt && no_other_devices()) {
     message("serving graphics through rmote")
 
     output_dir <- file.path(get_server_dir(), "plots")
-    if(!file.exists(output_dir))
+    if (!file.exists(output_dir))
       dir.create(output_dir, recursive = TRUE)
 
     opts <- getOption("rmote_device")
-    if(is.null(opts)) {
+    if (is.null(opts)) {
       rmote_device()
       opts <- getOption("rmote_device")
     }
 
-    if(is.null(opts$filename)) {
+    if (is.null(opts$filename)) {
       plot_base <- digest::digest(x)
     } else {
       plot_base <- opts$filename
@@ -44,10 +70,10 @@ print_graphics <- function(x) {
     ofile <- file.path(output_dir, paste0(plot_base, ".", opts$type))
 
     cur_type <- opts$type
-    if(opts$type == "png") {
+    if (opts$type == "png") {
       ww <- opts$width
       hh <- opts$height
-      if(opts$retina) {
+      if (opts$retina) {
         opts$width <- opts$width * 2
         opts$height <- opts$height * 2
         opts$res <- 150
@@ -59,10 +85,10 @@ print_graphics <- function(x) {
       opts$type <- NULL
       opts$retina <- NULL
       opts$filename <- ofile
-      if(capabilities("cairo"))
+      if (capabilities("cairo"))
         opts$type <- "cairo-png"
       do.call(png, opts)
-    } else if(opts$type == "pdf") {
+    } else if (opts$type == "pdf") {
       html <- tags$html(
         tags$head(tags$title(paste("raster plot:", plot_base))),
         tags$body(tags$a(href = file, "pdf", target = "_blank")))
@@ -71,20 +97,26 @@ print_graphics <- function(x) {
       do.call(pdf, opts)
     }
 
-    if(inherits(x, c("trellis", "ggplot"))) {
-      if(inherits(x, "trellis"))
+    if (inherits(x, c("trellis", "ggplot", "expression"))) {
+      if (inherits(x, "trellis"))
         getFromNamespace("print.trellis", "lattice")(x)
-      if(inherits(x, "ggplot"))
+      if (inherits(x, "ggplot"))
         getFromNamespace("print.ggplot", "ggplot2")(x)
+      if (inherits(x, "expression"))
+        eval(x)
+
       dev.off()
+
+      if (!file.exists(ofile))
+        stop("Nothing was plotted...")
 
       res <- write_html(html)
 
       # make thumbnail
-      if(is_history_on())
+      if (is_history_on())
         make_raster_thumb(res, cur_type, opts, ofile)
 
-    } else if(inherits(x, "base_graphics")) {
+    } else if (inherits(x, "base_graphics")) {
       message("when finished with plot commands, call plot_done()")
       options(rmote_baseplot = list(html = html, ofile = ofile,
         cur_type = cur_type, opts = opts))
@@ -92,10 +124,12 @@ print_graphics <- function(x) {
 
     return()
   } else {
-    if(inherits(x, "trellis"))
+    if (inherits(x, "trellis"))
       return(getFromNamespace("print.trellis", "lattice")(x))
-    if(inherits(x, "ggplot"))
+    if (inherits(x, "ggplot"))
       return(getFromNamespace("print.ggplot", "ggplot2")(x))
+    if (inherits(x, "expression"))
+      eval(x)
   }
 }
 
@@ -112,11 +146,11 @@ rmote_device <- function(type = c("png", "pdf"), filename = NULL, retina = TRUE,
   opts <- list(...)
   opts$type <- type
   opts$filename <- filename
-  if(type == "png") {
+  if (type == "png") {
     opts$retina <- retina
-    if(is.null(opts$width))
+    if (is.null(opts$width))
       opts$width <- 480
-    if(is.null(opts$height))
+    if (is.null(opts$height))
       opts$height <- 480
   }
 
@@ -126,12 +160,12 @@ rmote_device <- function(type = c("png", "pdf"), filename = NULL, retina = TRUE,
 make_raster_thumb <- function(res, cur_type, opts, ofile) {
   message("making thumbnail")
   fbase <- file.path(get_server_dir(), "thumbs")
-  if(!file.exists(fbase))
+  if (!file.exists(fbase))
     dir.create(fbase)
   nf <- file.path(fbase, gsub("html$", "png", basename(res)))
-  if(cur_type == "pdf") {
+  if (cur_type == "pdf") {
     opts <- list(filename = nf, width = 300, height = 150)
-    if(capabilities("cairo"))
+    if (capabilities("cairo"))
       opts$type <- "cairo-png"
     do.call(png, opts)
     getFromNamespace("print.trellis", "lattice")(text_plot("pdf file"))
@@ -140,6 +174,3 @@ make_raster_thumb <- function(res, cur_type, opts, ofile) {
     suppressMessages(make_thumb(ofile, nf, width = opts$width, height = opts$height))
   }
 }
-
-
-

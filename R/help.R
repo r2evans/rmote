@@ -3,7 +3,7 @@
 #'
 #' @param x help object
 #' @param \ldots  additional parameters
-#' @S3method print help_files_with_topic
+#' @export
 #' @importFrom tools Rd2HTML
 print.help_files_with_topic <- function(x, ...) {
 
@@ -11,7 +11,7 @@ print.help_files_with_topic <- function(x, ...) {
 
   help_opt <- getOption("rmote_help", FALSE)
 
-  if(is_rmote_on() && help_opt && length(file) == 1 && grepl("/help/", file)) {
+  if (is_rmote_on() && help_opt && length(file) == 1 && grepl("/help/", file)) {
     message("serving help through rmote")
 
     res <- try({
@@ -21,11 +21,11 @@ print.help_files_with_topic <- function(x, ...) {
       tmp <- getFromNamespace("fetchRdDB", "tools")(rdb_path, topic)
       capture.output(tools::Rd2HTML(tmp))
     }, silent = TRUE)
-    if(!inherits(res, "try-error")) {
+    if (!inherits(res, "try-error")) {
       server_dir <- get_server_dir()
       # move R.css over
       # file.path(R.home('doc'), 'html', 'R.css')
-      if(!file.exists(file.path(server_dir, "R.css")))
+      if (!file.exists(file.path(server_dir, "R.css")))
         file.copy(file.path(system.file(package = "rmote"), "R.css"), server_dir)
 
       ii <- get_output_index()
@@ -33,14 +33,14 @@ print.help_files_with_topic <- function(x, ...) {
         file.path(server_dir, get_output_file(ii)))
       write_index(ii)
 
-      if(is_history_on()) {
+      if (is_history_on()) {
         message("making thumbnail")
         fbase <- file.path(server_dir, "thumbs")
-        if(!file.exists(fbase))
+        if (!file.exists(fbase))
           dir.create(fbase)
         nf <- file.path(fbase, gsub("html$", "png", get_output_file(ii)))
         opts <- list(filename = nf, width = 300, height = 150)
-        if(capabilities("cairo"))
+        if (capabilities("cairo"))
           opts$type <- "cairo-png"
         do.call(png, opts)
         getFromNamespace("print.trellis", "lattice")(text_plot(paste("help:", topic)))

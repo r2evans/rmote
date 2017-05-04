@@ -28,4 +28,3 @@ Set the rmote mode to be on
 \note{
 This is useful when running multiple R sessions on a server, where all will serve the same rmote process.  It is not necessary to call this in the same session on which \code{\link{start_rmote}} has been called, but on any other R sessions.
 }
-

@@ -8,11 +8,11 @@ plot_done <- function() {
 
 make_base_plot <- function() {
   rmb <- getOption("rmote_baseplot")
-  if(!is.null(rmb)) {
+  if (!is.null(rmb)) {
     dev.off()
     res <- write_html(rmb$html)
     options(rmote_baseplot = NULL)
-    if(is_history_on())
+    if (is_history_on())
       make_raster_thumb(res, rmb$cur_type, rmb$opts, rmb$ofile)
   }
 }
@@ -23,7 +23,7 @@ set_base_plot_hook <- function() {
     # if a device was opened up automatically, turn it off
     # (automatic devices don't have a path)
     fp <- attr(.Device, "filepath")
-    if(is.null(fp) || fp == "Rplots.pdf")
+    if (is.null(fp) || fp == "Rplots.pdf")
       dev.off()
 
     # in case previous plot has never finished
@@ -32,10 +32,10 @@ set_base_plot_hook <- function() {
     # this will call png or pdf with appropriate options
     dummy <- structure(list(Sys.time()), class = "base_graphics")
     getFromNamespace("print_graphics", "rmote")(dummy)
-  }, "replace")
+  },
+  "replace")
 }
 
 unset_base_plot_hook <- function() {
   setHook("before.plot.new", getOption("pre_plot_hook"), "replace")
 }
-

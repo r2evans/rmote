@@ -18,4 +18,3 @@ rmote_device(type = c("png", "pdf"), filename = NULL, retina = TRUE, ...)
 \description{
 Set device parameters for traditional grahpics plot output
 }
-

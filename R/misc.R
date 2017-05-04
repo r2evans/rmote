@@ -1,7 +1,7 @@
 
 get_hostname <- function() {
   hn <- try(system("hostname", intern = TRUE, ignore.stderr = TRUE), silent = TRUE)
-  if(inherits(hn, "try-error"))
+  if (inherits(hn, "try-error"))
     hn <- ""
   hn
 }
@@ -9,7 +9,7 @@ get_hostname <- function() {
 get_output_index <- function() {
   server_dir <- get_server_dir()
   idx_path <- file.path(get_server_dir(), ".idx")
-  if(!file.exists(idx_path))
+  if (!file.exists(idx_path))
     return(1)
   as.integer(readLines(idx_path, warn = FALSE)[1]) + 1
 }
@@ -20,10 +20,10 @@ get_output_file <- function(ii) {
 
 set_index_template <- function() {
   a <- readLines(system.file("index.html", package = "rmote"), warn = FALSE)
-  if(getOption("rmote_hostname")) {
+  if (getOption("rmote_hostname")) {
     idx <- grepl("rmote viewer", a[1:10])
     hn <- get_hostname()
-    if(length(idx) > 0 && hn != "")
+    if (length(idx) > 0 && hn != "")
       a[idx] <- gsub("rmote viewer", paste("rmote:", hn), a[idx])
   }
   options(rmote_index = paste(c(a, ""), collapse = "\n"))
@@ -40,7 +40,7 @@ write_html <- function(html) {
 }
 
 write_index <- function(ii) {
-  if(is.null(getOption("rmote_index")))
+  if (is.null(getOption("rmote_index")))
     set_index_template()
   res <- gsub("___max_page___", ii, getOption("rmote_index"))
   res <- gsub("___history___", ifelse(is_history_on(), "true", "false"), res)
@@ -59,7 +59,7 @@ is_history_on <- function() {
 
 no_other_devices <- function() {
   res <- length(dev.list()) == 0
-  if(!res) {
+  if (!res) {
     message("- not sending to rmote because another graphics device has been opened...")
     message("- sending to the open graphics device instead...")
     message("- to send to rmote, close all active graphics devices using graphics.off()")
@@ -69,10 +69,10 @@ no_other_devices <- function() {
 
 get_server_dir <- function() {
   server_dir <- getOption("rmote_server_dir")
-  if(is.null(server_dir))
+  if (is.null(server_dir))
     stop("No setting for rmote_server_dir - make sure to call rmote_server_init()")
 
-  if(!file.exists(server_dir))
+  if (!file.exists(server_dir))
     dir.create(server_dir, recursive = TRUE, showWarnings = FALSE)
 
   server_dir
@@ -80,7 +80,7 @@ get_server_dir <- function() {
 
 get_port <- function() {
   port <- getOption("rmote_server_port")
-  if(is.null(port))
+  if (is.null(port))
     stop("No setting for rmote_server_port - make sure to call rmote_server_init()")
 
   port
@@ -97,7 +97,7 @@ text_plot <- function(text) {
 #' @importFrom graphics rasterImage
 make_thumb <- function(in_file, out_file, width, height) {
   fbase <- dirname(out_file)
-  if(!dir.exists(fbase))
+  if (!dir.exists(fbase))
     dir.create(fbase)
 
   max_height <- 150
@@ -107,7 +107,7 @@ make_thumb <- function(in_file, out_file, width, height) {
 
   img <- png::readPNG(in_file)
   opts <- list(filename = out_file, width = width, height = height)
-  if(capabilities("cairo"))
+  if (capabilities("cairo"))
     opts$type <- "cairo-png"
   do.call(png, opts)
     par(mar = c(0,0,0,0), xaxs = "i", yaxs = "i", ann = FALSE)
@@ -118,7 +118,7 @@ make_thumb <- function(in_file, out_file, width, height) {
 }
 
 dir.exists <- function(x) {
-  if(file.exists(x) & file.info(x)$isdir)
+  if (file.exists(x) & file.info(x)$isdir)
     return(TRUE)
   return(FALSE)
 }

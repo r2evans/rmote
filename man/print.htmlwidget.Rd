@@ -14,4 +14,3 @@
 \description{
 Print an htmlwidget to servr
 }
-

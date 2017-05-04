@@ -30,4 +30,3 @@ start_rmote(server_dir = file.path(tempdir(), "rmote_server"), port = 4321,
 \description{
 Initialize a remote servr
 }
-

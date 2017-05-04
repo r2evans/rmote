@@ -1,6 +1,9 @@
 #' @import ggplot2
 #' @import lattice
 #' @import htmlwidgets
+#' @importFrom grDevices dev.list dev.off pdf png
+#' @importFrom graphics par plot
+#' @importFrom utils capture.output getFromNamespace
 NULL
 
 #' Initialize a remote servr
@@ -24,7 +27,7 @@ start_rmote <- function(
   basegraphics = TRUE, htmlwidgets = TRUE,
   hostname = TRUE, history = TRUE) {
 
-  if(!file.exists(server_dir))
+  if (!file.exists(server_dir))
     dir.create(server_dir, recursive = TRUE, showWarnings = FALSE)
 
   options(rmote_server_dir = server_dir)
@@ -38,7 +41,7 @@ start_rmote <- function(
 
   set_index_template()
 
-  if(basegraphics)
+  if (basegraphics)
     set_base_plot_hook()
 
   try(servr::httw(server_dir, pattern = "index.html", port = port,
@@ -49,7 +52,7 @@ start_rmote <- function(
 #' @export
 stop_rmote <- function() {
   plot_done()
-  if(getOption("rmote_basegraphics", FALSE))
+  if (getOption("rmote_basegraphics", FALSE))
     unset_base_plot_hook()
   options(rmote_on = FALSE)
   servr::daemon_stop()
@@ -72,7 +75,7 @@ rmote_on <- function(server_dir,
   hostname = TRUE, history = TRUE
 ) {
 
-  if(!file.exists(server_dir))
+  if (!file.exists(server_dir))
     stop("The location of server_dir does not exist - no rmote server running here...")
 
   options(rmote_on = TRUE)
@@ -85,7 +88,7 @@ rmote_on <- function(server_dir,
   options(rmote_hostname = hostname)
   options(rmote_history = history)
 
-  if(basegraphics)
+  if (basegraphics)
     set_base_plot_hook()
 
   invisible(NULL)
@@ -96,7 +99,7 @@ rmote_on <- function(server_dir,
 #' @export
 rmote_off <- function() {
   plot_done()
-  if(getOption("rmote_basegraphics", FALSE))
+  if (getOption("rmote_basegraphics", FALSE))
     unset_base_plot_hook()
   options(rmote_on = FALSE)
 }
