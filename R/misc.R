@@ -108,17 +108,6 @@ make_thumb <- function(in_file, out_file, width, height) {
   P <- magick::image_read(in_file)
   P2 <- magick::image_scale(P, paste0(width, "x", height))
   magick::image_write(P2, out_file)
-
-  img <- png::readPNG(in_file)
-  opts <- list(filename = out_file, width = width, height = height)
-  if (capabilities("cairo"))
-    opts$type <- "cairo-png"
-  do.call(png, opts)
-    par(mar = c(0,0,0,0), xaxs = "i", yaxs = "i", ann = FALSE)
-    plot(1:2, type = "n", xaxt = "n", yaxt = "n", xlab = "", ylab = "")
-    lim <- par()
-    graphics::rasterImage(img, lim$usr[1], lim$usr[3], lim$usr[2], lim$usr[4])
-  dev.off()
 }
 
 dir.exists <- function(x) {
