@@ -91,7 +91,9 @@ print_graphics <- function(x) {
     } else if (opts$type == "pdf") {
       html <- tags$html(
         tags$head(tags$title(paste("raster plot:", plot_base))),
-        tags$body(tags$a(href = file, "pdf", target = "_blank")))
+        tags$object(data = file, type = "application/pdf",
+                    width = "100%", height = "95vh", style = "min-height: 95vh;",
+                    tags$a(href = file, "pdf", target = "_blank")))
       opts$type <- NULL
       opts$file <- ofile
       do.call(pdf, opts)
@@ -157,6 +159,7 @@ rmote_device <- function(type = c("png", "pdf"), filename = NULL, retina = TRUE,
   options(rmote_device = opts)
 }
 
+#' @importFrom magick image_read_pdf image_write
 make_raster_thumb <- function(res, cur_type, opts, ofile) {
   message("making thumbnail")
   fbase <- file.path(get_server_dir(), "thumbs")
@@ -164,12 +167,16 @@ make_raster_thumb <- function(res, cur_type, opts, ofile) {
     dir.create(fbase)
   nf <- file.path(fbase, gsub("html$", "png", basename(res)))
   if (cur_type == "pdf") {
-    opts <- list(filename = nf, width = 300, height = 150)
-    if (capabilities("cairo"))
-      opts$type <- "cairo-png"
-    do.call(png, opts)
-    getFromNamespace("print.trellis", "lattice")(text_plot("pdf file"))
-    dev.off()
+    P <- magick::image_read_pdf(ofile)
+    inf <- magick::image_info(P)
+
+    max_height <- 150
+    ratio <- max_height / inf$height
+    height <- ratio * inf$height
+    width <- ratio * inf$width
+
+    P2 <- magick::image_scale(P, paste0(width, "x", height))
+    magick::image_write(P2, path = nf)
   } else {
     suppressMessages(make_thumb(ofile, nf, width = opts$width, height = opts$height))
   }

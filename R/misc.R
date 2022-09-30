@@ -105,6 +105,10 @@ make_thumb <- function(in_file, out_file, width, height) {
   height <- ratio * height
   width <- ratio * width
 
+  P <- magick::image_read(in_file)
+  P2 <- magick::image_scale(P, paste0(width, "x", height))
+  magick::image_write(P2, out_file)
+
   img <- png::readPNG(in_file)
   opts <- list(filename = out_file, width = width, height = height)
   if (capabilities("cairo"))
