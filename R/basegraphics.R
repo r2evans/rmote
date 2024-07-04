@@ -24,8 +24,8 @@ set_base_plot_hook <- function() {
     # (automatic devices don't have a path)
     fp <- attr(.Device, "filepath")
     if (is.null(fp) || fp == "Rplots.pdf")
-      dev.off()
-
+      if(dev.cur() > 1)
+        dev.off()
     # in case previous plot has never finished
     getFromNamespace("make_base_plot", "rmote")()
 
@@ -37,5 +37,5 @@ set_base_plot_hook <- function() {
 }
 
 unset_base_plot_hook <- function() {
-  setHook("before.plot.new", getOption("pre_plot_hook"), "replace")
+  setHook("before.plot.new", getOption("prev_plot_hook"), "replace")
 }
